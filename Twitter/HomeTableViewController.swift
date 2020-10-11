@@ -18,16 +18,13 @@ class HomeTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loadTweets()
-        
         myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
         tableView.refreshControl = myRefreshControl
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        loadTweets()
     }
     
     @objc func loadTweets(){
@@ -43,9 +40,10 @@ class HomeTableViewController: UITableViewController {
                 self.tweetArray.append(tweet)
             }
             
-            self.tableView.reloadData()
-            self.myRefreshControl.endRefreshing()
-            
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+                self.myRefreshControl.endRefreshing()
+            }
         }, failure: { (Error) in
             print("Could not get tweets")
         })
@@ -95,6 +93,10 @@ class HomeTableViewController: UITableViewController {
         if let imageData = data {
             cell.profileImage.image = UIImage(data: imageData)
         }
+        
+        cell.setFavorited(tweetArray[indexPath.row]["favorited"] as! Bool)
+        cell.setRetweeted(tweetArray[indexPath.row]["retweeted"] as! Bool)
+        cell.tweetId = tweetArray[indexPath.row]["id"] as! Int
         
         return cell
     }
